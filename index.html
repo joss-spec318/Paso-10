@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Paso 10</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e293b">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-defect: #ef4444; /* Rojo para defectos */
+            --accent-virtue: #10b981; /* Verde para virtudes */
+            --accent-gold: #fbbf24;   /* Dorado para XP y rachas */
+            --border-radius: 12px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 80px; }
+
+        /* Header & Gamification */
+        header { background-color: var(--card-bg); padding: 20px; border-bottom: 1px solid #334155; position: sticky; top: 0; z-index: 10; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        h1 { font-size: 24px; font-weight: 700; }
+        .date { color: var(--text-muted); font-size: 14px; }
+        
+        .game-stats { display: flex; justify-content: space-between; font-size: 14px; margin-top: 10px; background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; }
+        .stat-item { display: flex; align-items: center; gap: 5px; }
+        .stat-item span { color: var(--accent-gold); font-weight: bold; }
+
+        /* Contenedor Principal */
+        main { padding: 20px; }
+
+        /* Acordeones */
+        .section-title { font-size: 18px; margin: 20px 0 15px 0; padding-bottom: 5px; border-bottom: 2px solid #334155; }
+        .defect-title { border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        .virtue-title { border-color: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+
+        /* Sliders */
+        .item-row { background: var(--card-bg); padding: 15px; border-radius: var(--border-radius); margin-bottom: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .item-header { display: flex; justify-content: space-between; font-size: 16px; }
+        .item-value { font-weight: bold; }
+        
+        input[type=range] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #ffffff; cursor: pointer; margin-top: -8px; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        input[type=range]::-webkit-slider-runnable-track { width: 100%; height: 6px; border-radius: 3px; background: #334155; }
+        
+        /* Colores dinámicos de las pistas */
+        .defect-slider::-webkit-slider-runnable-track { background: linear-gradient(90deg, #334155 0%, var(--accent-defect) 100%); }
+        .virtue-slider::-webkit-slider-runnable-track { background: linear-gradient(90deg, #334155 0%, var(--accent-virtue) 100%); }
+
+        /* Nota y Botón */
+        textarea { width: 100%; height: 100px; background: var(--card-bg); border: 1px solid #334155; color: white; padding: 15px; border-radius: var(--border-radius); font-size: 16px; margin-top: 10px; resize: none; }
+        textarea:focus { outline: none; border-color: var(--text-muted); }
+        
+        .btn-save { display: block; width: 100%; padding: 16px; margin-top: 25px; background: var(--accent-gold); color: #000; font-size: 18px; font-weight: bold; border: none; border-radius: var(--border-radius); cursor: pointer; transition: transform 0.1s; }
+        .btn-save:active { transform: scale(0.98); }
+
+        /* Notificación de éxito */
+        #toast { position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: var(--accent-virtue); color: white; padding: 12px 24px; border-radius: 20px; font-weight: bold; transition: 0.3s; opacity: 0; z-index: 100; }
+        #toast.show { bottom: 30px; opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-top">
+            <h1>Paso 10</h1>
+            <div class="date" id="displayDate"></div>
+        </div>
+        <div class="game-stats">
+            <div class="stat-item">🔥 Racha: <span id="uiStreak">0 días</span></div>
+            <div class="stat-item">⭐ Nivel: <span id="uiLevel">1</span> (<span id="uiXP">0</span> XP)</div>
+        </div>
+    </header>
+
+    <main>
+        <h2 class="section-title defect-title">Defectos</h2>
+        <div id="defectos-container"></div>
+
+        <h2 class="section-title virtue-title">Virtudes</h2>
+        <div id="virtudes-container"></div>
+
+        <h2 class="section-title">Nota del día</h2>
+        <textarea id="notaDia" placeholder="Hoy tuve mucho resentimiento con..."></textarea>
+
+        <button class="btn-save" onclick="guardarInventario()">Guardar Inventario</button>
+    </main>
+
+    <div id="toast">+100 XP ¡Inventario Guardado!</div>
+
+    <script>
+        // Listas de datos
+        const defectos = ["Orgullo", "Avaricia", "Lujuria", "Envidia", "Ira", "Gula", "Pereza", "Egoísmo", "Autojustificación", "Falta de honradez en el pensar", "Engreimiento", "Resentimiento", "Intolerancia", "Impaciencia", "Hipocresía", "Morosidad", "Autoconmiseración", "Susceptibilidad excesiva", "Miedo"];
+        const virtudes = ["Cortesía", "Jovialidad", "Orden", "Lealtad", "Empleo adecuado del tiempo", "Puntualidad", "Sinceridad", "Comedido al hablar", "Bondad", "Paciencia", "Tolerancia", "Integridad", "Equilibrio", "Gratitud"];
+
+        // Variables del estado del juego
+        let xp = parseInt(localStorage.getItem('paso10_xp')) || 0;
+        let streak = parseInt(localStorage.getItem('paso10_streak')) || 0;
+        let lastDate = localStorage.getItem('paso10_lastDate') || "";
+
+        // Inicializar pantalla
+        function init() {
+            // Fecha actual
+            const opcionesFecha = { day: 'numeric', month: 'long', year: 'numeric' };
+            document.getElementById('displayDate').innerText = new Date().toLocaleDateString('es-ES', opcionesFecha);
+
+            // Generar HTML de Defectos
+            const contDefectos = document.getElementById('defectos-container');
+            defectos.forEach((item, index) => {
+                contDefectos.innerHTML += crearSliderHTML(item, 'd' + index, 'defect-slider');
+            });
+
+            // Generar HTML de Virtudes
+            const contVirtudes = document.getElementById('virtudes-container');
+            virtudes.forEach((item, index) => {
+                contVirtudes.innerHTML += crearSliderHTML(item, 'v' + index, 'virtue-slider');
+            });
+
+            actualizarUIStats();
+        }
+
+        // Componente de Slider reutilizable
+        function crearSliderHTML(nombre, id, claseColor) {
+            return `
+                <div class="item-row">
+                    <div class="item-header">
+                        <span>${nombre}</span>
+                        <span class="item-value" id="val_${id}">0</span>
+                    </div>
+                    <input type="range" id="${id}" class="${claseColor}" min="0" max="10" value="0" oninput="document.getElementById('val_${id}').innerText = this.value">
+                </div>
+            `;
+        }
+
+        // Lógica de guardado local
+        function guardarInventario() {
+            const inventarioDelDia = {
+                fecha: new Date().toISOString(),
+                defectos: {},
+                virtudes: {},
+                nota: document.getElementById('notaDia').value
+            };
+
+            // Recopilar valores
+            defectos.forEach((item, index) => {
+                inventarioDelDia.defectos[item] = parseInt(document.getElementById('d' + index).value);
+            });
+            virtudes.forEach((item, index) => {
+                inventarioDelDia.virtudes[item] = parseInt(document.getElementById('v' + index).value);
+            });
+
+            // Guardar en LocalStorage (Array de historiales)
+            let historial = JSON.parse(localStorage.getItem('paso10_historial')) || [];
+            historial.push(inventarioDelDia);
+            localStorage.setItem('paso10_historial', JSON.stringify(historial));
+
+            // Lógica de Mini Juego (Rachas y XP)
+            const fechaHoy = new Date().toDateString();
+            if (lastDate !== fechaHoy) {
+                streak += 1;
+                xp += 100 + (streak > 3 ? 20 : 0); // Bono si la racha es mayor a 3 días
+                localStorage.setItem('paso10_streak', streak);
+                localStorage.setItem('paso10_xp', xp);
+                localStorage.setItem('paso10_lastDate', fechaHoy);
+                actualizarUIStats();
+            }
+
+            // Mostrar mensaje Ade éxito
+            mostrarToast();
+            
+            // Limpiar campos visualmente
+            document.querySelectorAll('input[type=range]').forEach(input => { input.value = 0; input.dispatchEvent(new Event('input')); });
+            document.getElementById('notaDia').value = "";
+        }
+
+        function actualizarUIStats() {
+            document.getElementById('uiStreak').innerText = streak + (streak === 1 ? " día" : " días");
+            document.getElementById('uiXP').innerText = xp;
+            document.getElementById('uiLevel').innerText = Math.floor(xp / 500) + 1; // Sube de nivel cada 500 XP
+        }
+
+        function mostrarToast() {
+            const toast = document.getElementById("toast");
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Arrancar la app
+        window.onload = init;
+    </script>
+</body>
+</html>
