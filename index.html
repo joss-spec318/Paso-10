@@ -15,35 +15,30 @@
 
     <style>
         :root {
-            --bg-color: #f8fafc;       /* Fondo gris muy claro y limpio */
-            --card-bg: #ffffff;        /* Tarjetas blancas puras */
-            --text-main: #0f172a;      /* Texto principal oscuro sobrio */
-            --text-muted: #64748b;     /* Texto secundario gris */
-            --border-color: #e2e8f0;   /* Bordes sutiles */
-            --accent: #3b82f6;         /* Azul sobrio para botones y tabs */
-            --accent-gold: #b45309;    /* Dorado oscuro elegante para logros/rachas */
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --accent: #3b82f6;
+            --accent-gold: #b45309;
             --radius: 14px;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        
         body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; }
 
-        /* Encabezado Fijo */
         header { background: var(--card-bg); padding: 16px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
         h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
         .date { color: var(--text-muted); font-size: 14px; }
 
-        /* Contenedores de Pantallas */
         .screen { display: none; padding: 20px; }
         .screen.active { display: block; }
 
-        /* Elementos Comunes: Tarjetas */
         .card { background: var(--card-bg); padding: 16px; border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.02); }
         .card-title { font-size: 14px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; font-weight: 600; }
 
-        /* PANTALLA 1: INVENTARIO */
         .section-title { font-size: 18px; margin: 20px 0 12px 0; font-weight: 700; color: var(--text-muted); }
         .item-row { background: var(--card-bg); padding: 14px; border-radius: var(--radius); border: 1px solid var(--border-color); margin-bottom: 8px; display: flex; flex-direction: column; gap: 8px; }
         .item-header { display: flex; justify-content: space-between; font-size: 15px; font-weight: 500; }
@@ -58,7 +53,6 @@
         
         .btn-main { display: block; width: 100%; padding: 16px; background: var(--accent); color: white; font-size: 16px; font-weight: bold; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 20px; }
 
-        /* PANTALLA 2: ESTADÍSTICAS */
         .tabs { display: flex; background: #e2e8f0; padding: 4px; border-radius: 10px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; background: transparent; border: none; font-size: 14px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; }
         .tab-btn.active { background: var(--card-bg); color: var(--text-main); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
@@ -66,7 +60,6 @@
         select { width: 100%; padding: 12px; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 10px; font-size: 15px; color: var(--text-main); margin-bottom: 10px; outline: none; }
         .chart-container { position: relative; width: 100%; height: 180px; }
 
-        /* PANTALLA 3: RESUMEN Y REGISTRO */
         .grid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
         .big-number { font-size: 28px; font-weight: 800; color: var(--text-main); margin-top: 5px; }
         .stat-label { font-size: 15px; font-weight: 700; margin-top: 4px; }
@@ -77,7 +70,6 @@
         .history-date { font-size: 13px; color: var(--text-muted); font-weight: 600; }
         .history-note { font-size: 14px; margin-top: 4px; color: #334155; font-style: italic; }
 
-        /* Barra de Navegación Inferior (Fija) */
         nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
         .nav-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer; width: 33.3%; }
         .nav-btn.active { color: var(--accent); }
@@ -85,6 +77,8 @@
 
         #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; transition: 0.3s; opacity: 0; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         #toast.show { bottom: 90px; opacity: 1; }
+        
+        #error-msg { display: none; background: #fee2e2; color: #b91c1c; padding: 15px; margin: 20px; border-radius: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -95,6 +89,8 @@
             <div class="date" id="displayDate"></div>
         </div>
     </header>
+
+    <div id="error-msg">Ocurrió un error al cargar. Por favor, limpia la caché de tu navegador.</div>
 
     <section id="screen-inventario" class="screen active">
         <h2 class="section-title">Defectos</h2>
@@ -120,12 +116,10 @@
             <select id="select-chart-1" onchange="renderizarGrafico(1)"></select>
             <div class="chart-container"><canvas id="chart-1"></canvas></div>
         </div>
-
         <div class="card">
             <select id="select-chart-2" onchange="renderizarGrafico(2)"></select>
             <div class="chart-container"><canvas id="chart-2"></canvas></div>
         </div>
-
         <div class="card">
             <select id="select-chart-3" onchange="renderizarGrafico(3)"></select>
             <div class="chart-container"><canvas id="chart-3"></canvas></div>
@@ -186,36 +180,200 @@
         let instanciasGraficos = {};
 
         function init() {
-            // Fecha
-            document.getElementById('displayDate').innerText = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+            try {
+                document.getElementById('displayDate').innerText = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
 
-            // Renderizar Sliders
-            const cDef = document.getElementById('defectos-container');
-            const cVir = document.getElementById('virtudes-container');
-            defectos.forEach((x, i) => cDef.innerHTML += crearSliderHTML(x, 'd' + i));
-            virtudes.forEach((x, i) => cVir.innerHTML += crearSliderHTML(x, 'v' + i));
+                const cDef = document.getElementById('defectos-container');
+                const cVir = document.getElementById('virtudes-container');
+                
+                // Limpiar contenedores por si acaso
+                cDef.innerHTML = '';
+                cVir.innerHTML = '';
 
-            // Poblar Selectores de Gráficos
-            poblarSelectores();
-            
-            // Cargar cálculos iniciales
-            calcularResumenYNotas();
+                defectos.forEach((x, i) => { cDef.innerHTML += crearSliderHTML(x, 'd' + i); });
+                virtudes.forEach((x, i) => { cVir.innerHTML += crearSliderHTML(x, 'v' + i); });
+
+                poblarSelectores();
+                calcularResumenYNotas();
+            } catch (error) {
+                console.error("Error en inicialización:", error);
+                document.getElementById('error-msg').style.display = 'block';
+                document.getElementById('error-msg').innerText = "Hubo un error cargando la app: " + error.message;
+            }
         }
 
         function crearSliderHTML(nombre, id) {
-            return `
-                <div class="item-row">
-                    <div class="item-header"><span>${nombre}</span><span class="item-value" id="val_${id}">0</span></div>
-                    <input type="range" id="${id}" min="0" max="10" value="0" oninput="document.getElementById('val_${id}').innerText = this.value">
-                </div>`;
+            return '<div class="item-row">' +
+                   '<div class="item-header"><span>' + nombre + '</span><span class="item-value" id="val_' + id + '">0</span></div>' +
+                   '<input type="range" id="' + id + '" min="0" max="10" value="0" oninput="document.getElementById(\'val_' + id + '\').innerText = this.value">' +
+                   '</div>';
         }
 
         function poblarSelectores() {
-            const opciones = [...defectos, ...virtudes].map(x => `<option value="${x}">${x}</option>`).join('');
+            let opcionesHTML = "";
+            defectos.concat(virtudes).forEach(x => { opcionesHTML += '<option value="' + x + '">' + x + '</option>'; });
+            
             for(let i=1; i<=3; i++) {
-                const sel = document.getElementById(`select-chart-${i}`);
-                sel.innerHTML = opciones;
-                // Valores por defecto sugeridos por ti
-                if(i===1) sel.value = "Resentimiento";
-                if(i===2) sel.value = "Gratitud";
-                if(i===3) sel.value = "
+                const sel = document.getElementById('select-chart-' + i);
+                if (sel) {
+                    sel.innerHTML = opcionesHTML;
+                    if(i===1) sel.value = "Resentimiento";
+                    if(i===2) sel.value = "Gratitud";
+                    if(i===3) sel.value = "Miedo";
+                }
+            }
+        }
+
+        function navegar(pantalla, btn) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            
+            document.getElementById('screen-' + pantalla).classList.add('active');
+            btn.classList.add('active');
+            
+            document.getElementById('pageTitle').innerText = pantalla.charAt(0).toUpperCase() + pantalla.slice(1);
+
+            if(pantalla === 'estadisticas') {
+                setTimeout(() => { renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3); }, 50);
+            }
+            if(pantalla === 'resumen') {
+                calcularResumenYNotas();
+            }
+        }
+
+        function guardarInventario() {
+            const registro = {
+                fecha: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
+                timestamp: new Date().getTime(),
+                valores: {},
+                nota: document.getElementById('notaDia').value
+            };
+
+            defectos.forEach((x, i) => { registro.valores[x] = parseInt(document.getElementById('d' + i).value) || 0; });
+            virtudes.forEach((x, i) => { registro.valores[x] = parseInt(document.getElementById('v' + i).value) || 0; });
+
+            let historial = [];
+            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
+            
+            historial.push(registro);
+            localStorage.setItem('p10_historial', JSON.stringify(historial));
+
+            let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
+            streak++;
+            localStorage.setItem('p10_streak', streak);
+
+            const toast = document.getElementById("toast");
+            toast.classList.add("show");
+            setTimeout(() => toast.classList.remove("show"), 2500);
+
+            document.querySelectorAll('input[type=range]').forEach(input => { input.value = 0; input.dispatchEvent(new Event('input')); });
+            document.getElementById('notaDia').value = "";
+        }
+
+        function cambiarFiltroTiempo(filtro, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filtroTiempoActual = filtro;
+            renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3);
+        }
+
+        function renderizarGrafico(numGrafico) {
+            const sel = document.getElementById('select-chart-' + numGrafico);
+            if (!sel) return;
+            
+            const metrica = sel.value;
+            let historial = [];
+            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
+
+            let limite = 7;
+            if(filtroTiempoActual === 'mes') limite = 30;
+            if(filtroTiempoActual === 'año') limite = 365;
+            
+            let datosFiltrados = historial.slice(-limite);
+
+            const labels = datosFiltrados.map(h => h.fecha || "");
+            const dataValues = datosFiltrados.map(h => (h.valores && h.valores[metrica]) ? h.valores[metrica] : 0);
+
+            if(instanciasGraficos[numGrafico]) { instanciasGraficos[numGrafico].destroy(); }
+
+            const canvas = document.getElementById('chart-' + numGrafico);
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            instanciasGraficos[numGrafico] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: metrica,
+                        data: dataValues,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
+                        borderWidth: 2,
+                        tension: 0.2,
+                        fill: true
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10, ticks: { stepSize: 2 } } } }
+            });
+        }
+
+        function calcularResumenYNotas() {
+            let historial = [];
+            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
+            
+            document.getElementById('lblTotalDias').innerText = historial.length;
+            document.getElementById('lblRacha').innerText = localStorage.getItem('p10_streak') || 0;
+
+            if(historial.length === 0) return;
+
+            let totales = {};
+            defectos.concat(virtudes).forEach(x => { totales[x] = { suma: 0, con: 0 }; });
+
+            historial.forEach(h => {
+                if (h.valores) {
+                    Object.keys(h.valores).forEach(k => {
+                        if (totales[k]) {
+                            totales[k].suma += h.valores[k];
+                            totales[k].con++;
+                        }
+                    });
+                }
+            });
+
+            let maxDefecto = "", maxDefectoAvg = -1;
+            let maxVirtud = "", maxVirtudAvg = -1;
+
+            defectos.forEach(d => {
+                let avg = totales[d].suma / (totales[d].con || 1);
+                if(avg > maxDefectoAvg && totales[d].con > 0) { maxDefectoAvg = avg; maxDefecto = d; }
+            });
+
+            virtudes.forEach(v => {
+                let avg = totales[v].suma / (totales[v].con || 1);
+                if(avg > maxVirtudAvg && totales[v].con > 0) { maxVirtudAvg = avg; maxVirtud = v; }
+            });
+
+            document.getElementById('lblDefectoMax').innerText = maxDefecto || "-";
+            document.getElementById('lblDefectoAvg').innerText = "Promedio: " + (maxDefectoAvg > -1 ? maxDefectoAvg.toFixed(1) : "0");
+            
+            document.getElementById('lblVirtudMax').innerText = maxVirtud || "-";
+            document.getElementById('lblVirtudAvg').innerText = "Promedio: " + (maxVirtudAvg > -1 ? maxVirtudAvg.toFixed(1) : "0");
+
+            const contenedorNotas = document.getElementById('historial-notas-container');
+            let notasHTML = "";
+            
+            historial.slice().reverse().forEach(h => {
+                if(h.nota && h.nota.trim() !== "") {
+                    notasHTML += '<div class="history-item"><div class="history-date">' + h.fecha + '</div><div class="history-note">"' + h.nota + '"</div></div>';
+                }
+            });
+
+            contenedorNotas.innerHTML = notasHTML !== "" ? notasHTML : "No hay notas escritas aún.";
+        }
+
+        // Ejecutar al cargar la página
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
