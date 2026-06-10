@@ -8,7 +8,7 @@
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f8fafc">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Paso 10">
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,12 +26,16 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding-bottom: 90px; -webkit-tap-highlight-color: transparent; }
 
         header { background: var(--card-bg); padding: 16px 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; z-index: 100; }
         .header-top { display: flex; justify-content: space-between; align-items: center; }
-        h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+        h1 { font-size: 22px; font-weight: 800; color: var(--text-main); }
         .date { color: var(--text-muted); font-size: 14px; }
+        
+        /* Gamificación en Header */
+        .game-stats { display: flex; justify-content: space-between; margin-top: 12px; background: #f1f5f9; padding: 10px 15px; border-radius: 10px; font-size: 14px; font-weight: 600; }
+        .game-stats span { display: flex; align-items: center; gap: 5px; }
 
         .screen { display: none; padding: 20px; }
         .screen.active { display: block; }
@@ -51,7 +55,10 @@
         textarea { width: 100%; height: 110px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: var(--radius); font-size: 16px; resize: none; }
         textarea:focus { outline: none; border-color: var(--accent); }
         
-        .btn-main { display: block; width: 100%; padding: 16px; background: var(--accent); color: white; font-size: 16px; font-weight: bold; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 20px; }
+        .btn-main { display: block; width: 100%; padding: 16px; background: var(--accent); color: white; font-size: 16px; font-weight: bold; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        
+        .btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
 
         .tabs { display: flex; background: #e2e8f0; padding: 4px; border-radius: 10px; margin-bottom: 20px; }
         .tab-btn { flex: 1; padding: 10px; text-align: center; background: transparent; border: none; font-size: 14px; font-weight: 600; color: var(--text-muted); border-radius: 8px; cursor: pointer; }
@@ -70,15 +77,19 @@
         .history-date { font-size: 13px; color: var(--text-muted); font-weight: 600; }
         .history-note { font-size: 14px; margin-top: 4px; color: #334155; font-style: italic; }
 
-        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
+        nav { position: fixed; bottom: 0; left: 0; right: 0; height: 80px; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; align-items: center; z-index: 100; padding-bottom: env(safe-area-inset-bottom); }
         .nav-btn { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; cursor: pointer; width: 33.3%; }
         .nav-btn.active { color: var(--accent); }
-        .nav-icon { font-size: 20px; }
+        .nav-icon { font-size: 22px; }
 
-        #toast { position: fixed; bottom: -60px; left: 50%; transform: translateX(-50%); background: #10b981; color: white; padding: 12px 24px; border-radius: 30px; font-weight: bold; transition: 0.3s; opacity: 0; z-index: 200; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-        #toast.show { bottom: 90px; opacity: 1; }
-        
-        #error-msg { display: none; background: #fee2e2; color: #b91c1c; padding: 15px; margin: 20px; border-radius: 10px; font-weight: bold; }
+        /* Modal de Gamificación y Motivación */
+        #modal-recompensa { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
+        .modal-content { background: var(--card-bg); padding: 30px 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; animation: pop 0.3s ease-out; }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .modal-emoji { font-size: 50px; margin-bottom: 10px; }
+        .modal-title { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        .modal-xp { color: var(--accent-gold); font-weight: 800; font-size: 18px; margin-bottom: 15px; }
+        .modal-quote { font-size: 15px; font-style: italic; color: #475569; margin-bottom: 25px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -88,9 +99,11 @@
             <h1 id="pageTitle">Paso 10</h1>
             <div class="date" id="displayDate"></div>
         </div>
+        <div class="game-stats">
+            <span>🔥 Racha: <span id="hdrRacha" style="color: var(--accent-gold);">0</span></span>
+            <span>⭐ <span id="hdrXP">0</span> XP</span>
+        </div>
     </header>
-
-    <div id="error-msg">Ocurrió un error al cargar. Por favor, limpia la caché de tu navegador.</div>
 
     <section id="screen-inventario" class="screen active">
         <h2 class="section-title">Defectos</h2>
@@ -102,7 +115,7 @@
         <h2 class="section-title">Nota del día</h2>
         <textarea id="notaDia" placeholder="Escribe aquí las observaciones del día..."></textarea>
 
-        <button class="btn-main" onclick="guardarInventario()">Guardar Inventario</button>
+        <button class="btn-main" onclick="guardarInventario()">Completar Día</button>
     </section>
 
     <section id="screen-estadisticas" class="screen">
@@ -120,10 +133,6 @@
             <select id="select-chart-2" onchange="renderizarGrafico(2)"></select>
             <div class="chart-container"><canvas id="chart-2"></canvas></div>
         </div>
-        <div class="card">
-            <select id="select-chart-3" onchange="renderizarGrafico(3)"></select>
-            <div class="chart-container"><canvas id="chart-3"></canvas></div>
-        </div>
     </section>
 
     <section id="screen-resumen" class="screen">
@@ -131,24 +140,10 @@
             <div class="card">
                 <div class="card-title">Defecto Frecuente</div>
                 <div class="stat-label" id="lblDefectoMax">-</div>
-                <div class="stat-sub" id="lblDefectoAvg">Promedio: 0</div>
             </div>
             <div class="card">
                 <div class="card-title">Virtud más Fuerte</div>
                 <div class="stat-label" id="lblVirtudMax" style="color: #059669;">-</div>
-                <div class="stat-sub" id="lblVirtudAvg">Promedio: 0</div>
-            </div>
-        </div>
-
-        <div class="grid-stats">
-            <div class="card">
-                <div class="card-title">Días Registrados</div>
-                <div class="big-number" id="lblTotalDias">0</div>
-            </div>
-            <div class="card">
-                <div class="card-title">Racha Actual</div>
-                <div class="big-number" id="lblRacha" style="color: var(--accent-gold);">0</div>
-                <div class="stat-sub">días seguidos</div>
             </div>
         </div>
 
@@ -156,223 +151,195 @@
             <div class="card-title">Historial de Notas</div>
             <div id="historial-notas-container">No hay registros anteriores.</div>
         </div>
+
+        <div class="card" style="text-align: center;">
+            <div class="card-title">Recordatorio Diario</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Recibe una notificación para no perder tu racha.</p>
+            <button class="btn-main btn-outline" style="margin-top:0; padding: 12px;" onclick="solicitarPermisoNotificaciones()">🔔 Activar Recordatorio</button>
+        </div>
     </section>
 
+    <div id="modal-recompensa">
+        <div class="modal-content">
+            <div class="modal-emoji">🏆</div>
+            <div class="modal-title">¡Día Completado!</div>
+            <div class="modal-xp">+100 XP ganados</div>
+            <div class="modal-quote" id="modalQuote">"La honestidad de hoy construye la paz de mañana."</div>
+            <button class="btn-main" onclick="cerrarModal()">Continuar</button>
+        </div>
+    </div>
+
     <nav>
-        <button class="nav-btn active" onclick="navegar('inventario', this)">
-            <span class="nav-icon">✍️</span><span>Inventario</span>
-        </button>
-        <button class="nav-btn" onclick="navegar('estadisticas', this)">
-            <span class="nav-icon">📊</span><span>Estadísticas</span>
-        </button>
-        <button class="nav-btn" onclick="navegar('resumen', this)">
-            <span class="nav-icon">📋</span><span>Resumen</span>
-        </button>
+        <button class="nav-btn active" onclick="navegar('inventario', this)"><span class="nav-icon">✍️</span><span>Inventario</span></button>
+        <button class="nav-btn" onclick="navegar('estadisticas', this)"><span class="nav-icon">📊</span><span>Estadísticas</span></button>
+        <button class="nav-btn" onclick="navegar('resumen', this)"><span class="nav-icon">📋</span><span>Resumen</span></button>
     </nav>
 
-    <div id="toast">✨ Guardado e Historial Actualizado</div>
-
     <script>
+        // Registrar Service Worker para PWA Offline e Instalación
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA Lista')).catch(err => console.log(err));
+        }
+
         const defectos = ["Orgullo", "Avaricia", "Lujuria", "Envidia", "Ira", "Gula", "Pereza", "Egoísmo", "Autojustificación", "Falta de honradez en el pensar", "Engreimiento", "Resentimiento", "Intolerancia", "Impaciencia", "Hipocresía", "Morosidad", "Autoconmiseración", "Susceptibilidad excesiva", "Miedo"];
         const virtudes = ["Cortesía", "Jovialidad", "Orden", "Lealtad", "Empleo adecuado del tiempo", "Puntualidad", "Sinceridad", "Comedido al hablar", "Bondad", "Paciencia", "Tolerancia", "Integridad", "Equilibrio", "Gratitud"];
+        const frases = [
+            "El progreso es progreso, por pequeño que sea.",
+            "Tu honestidad rigurosa de hoy es tu paz mental de mañana.",
+            "No se trata de perfección, se trata de dirección.",
+            "Conocer tus defectos es el primer paso para transformarlos.",
+            "Un día a la vez. Hoy hiciste el trabajo.",
+            "La gratitud convierte lo que tenemos en suficiente.",
+            "Mirar hacia adentro requiere valentía. ¡Felicidades!"
+        ];
 
         let filtroTiempoActual = 'semana';
         let instanciasGraficos = {};
 
         function init() {
-            try {
-                document.getElementById('displayDate').innerText = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+            document.getElementById('displayDate').innerText = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+            
+            const cDef = document.getElementById('defectos-container');
+            const cVir = document.getElementById('virtudes-container');
+            cDef.innerHTML = ''; cVir.innerHTML = '';
+            defectos.forEach((x, i) => cDef.innerHTML += crearSliderHTML(x, 'd' + i));
+            virtudes.forEach((x, i) => cVir.innerHTML += crearSliderHTML(x, 'v' + i));
 
-                const cDef = document.getElementById('defectos-container');
-                const cVir = document.getElementById('virtudes-container');
-                
-                // Limpiar contenedores por si acaso
-                cDef.innerHTML = '';
-                cVir.innerHTML = '';
-
-                defectos.forEach((x, i) => { cDef.innerHTML += crearSliderHTML(x, 'd' + i); });
-                virtudes.forEach((x, i) => { cVir.innerHTML += crearSliderHTML(x, 'v' + i); });
-
-                poblarSelectores();
-                calcularResumenYNotas();
-            } catch (error) {
-                console.error("Error en inicialización:", error);
-                document.getElementById('error-msg').style.display = 'block';
-                document.getElementById('error-msg').innerText = "Hubo un error cargando la app: " + error.message;
-            }
+            poblarSelectores();
+            actualizarDatosJuego();
         }
 
         function crearSliderHTML(nombre, id) {
-            return '<div class="item-row">' +
-                   '<div class="item-header"><span>' + nombre + '</span><span class="item-value" id="val_' + id + '">0</span></div>' +
-                   '<input type="range" id="' + id + '" min="0" max="10" value="0" oninput="document.getElementById(\'val_' + id + '\').innerText = this.value">' +
-                   '</div>';
+            return '<div class="item-row"><div class="item-header"><span>' + nombre + '</span><span class="item-value" id="val_' + id + '">0</span></div><input type="range" id="' + id + '" min="0" max="10" value="0" oninput="document.getElementById(\'val_' + id + '\').innerText = this.value"></div>';
         }
 
         function poblarSelectores() {
-            let opcionesHTML = "";
-            defectos.concat(virtudes).forEach(x => { opcionesHTML += '<option value="' + x + '">' + x + '</option>'; });
-            
-            for(let i=1; i<=3; i++) {
+            let op = "";
+            defectos.concat(virtudes).forEach(x => op += '<option value="' + x + '">' + x + '</option>');
+            for(let i=1; i<=2; i++) {
                 const sel = document.getElementById('select-chart-' + i);
-                if (sel) {
-                    sel.innerHTML = opcionesHTML;
-                    if(i===1) sel.value = "Resentimiento";
-                    if(i===2) sel.value = "Gratitud";
-                    if(i===3) sel.value = "Miedo";
-                }
+                if (sel) { sel.innerHTML = op; sel.value = i===1 ? "Resentimiento" : "Gratitud"; }
             }
         }
 
         function navegar(pantalla, btn) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-            
             document.getElementById('screen-' + pantalla).classList.add('active');
             btn.classList.add('active');
-            
             document.getElementById('pageTitle').innerText = pantalla.charAt(0).toUpperCase() + pantalla.slice(1);
 
-            if(pantalla === 'estadisticas') {
-                setTimeout(() => { renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3); }, 50);
-            }
-            if(pantalla === 'resumen') {
-                calcularResumenYNotas();
-            }
+            if(pantalla === 'estadisticas') { setTimeout(() => { renderizarGrafico(1); renderizarGrafico(2); }, 50); }
+            if(pantalla === 'resumen') { actualizarDatosJuego(); }
         }
 
         function guardarInventario() {
             const registro = {
                 fecha: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
                 timestamp: new Date().getTime(),
-                valores: {},
-                nota: document.getElementById('notaDia').value
+                valores: {}, nota: document.getElementById('notaDia').value
             };
 
             defectos.forEach((x, i) => { registro.valores[x] = parseInt(document.getElementById('d' + i).value) || 0; });
             virtudes.forEach((x, i) => { registro.valores[x] = parseInt(document.getElementById('v' + i).value) || 0; });
 
-            let historial = [];
-            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
+            let historial = JSON.parse(localStorage.getItem('p10_historial')) || [];
             
+            // Verificar si ya guardó hoy para no sumar racha/XP doble
+            const hoyStr = new Date().toDateString();
+            const ultimoGuardado = localStorage.getItem('p10_ultimo_guardado');
+            
+            if (ultimoGuardado !== hoyStr) {
+                let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
+                let xp = parseInt(localStorage.getItem('p10_xp')) || 0;
+                localStorage.setItem('p10_streak', streak + 1);
+                localStorage.setItem('p10_xp', xp + 100);
+                localStorage.setItem('p10_ultimo_guardado', hoyStr);
+            }
+
             historial.push(registro);
             localStorage.setItem('p10_historial', JSON.stringify(historial));
 
-            let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
-            streak++;
-            localStorage.setItem('p10_streak', streak);
+            mostrarModalRecompensa();
 
-            const toast = document.getElementById("toast");
-            toast.classList.add("show");
-            setTimeout(() => toast.classList.remove("show"), 2500);
-
+            // Limpiar
             document.querySelectorAll('input[type=range]').forEach(input => { input.value = 0; input.dispatchEvent(new Event('input')); });
             document.getElementById('notaDia').value = "";
+            actualizarDatosJuego();
         }
 
-        function cambiarFiltroTiempo(filtro, btn) {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filtroTiempoActual = filtro;
-            renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3);
-        }
+        function actualizarDatosJuego() {
+            let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
+            let xp = parseInt(localStorage.getItem('p10_xp')) || 0;
+            document.getElementById('hdrRacha').innerText = streak;
+            document.getElementById('hdrXP').innerText = xp;
 
-        function renderizarGrafico(numGrafico) {
-            const sel = document.getElementById('select-chart-' + numGrafico);
-            if (!sel) return;
-            
-            const metrica = sel.value;
-            let historial = [];
-            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
-
-            let limite = 7;
-            if(filtroTiempoActual === 'mes') limite = 30;
-            if(filtroTiempoActual === 'año') limite = 365;
-            
-            let datosFiltrados = historial.slice(-limite);
-
-            const labels = datosFiltrados.map(h => h.fecha || "");
-            const dataValues = datosFiltrados.map(h => (h.valores && h.valores[metrica]) ? h.valores[metrica] : 0);
-
-            if(instanciasGraficos[numGrafico]) { instanciasGraficos[numGrafico].destroy(); }
-
-            const canvas = document.getElementById('chart-' + numGrafico);
-            if (!canvas) return;
-            
-            const ctx = canvas.getContext('2d');
-            instanciasGraficos[numGrafico] = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: metrica,
-                        data: dataValues,
-                        borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                        borderWidth: 2,
-                        tension: 0.2,
-                        fill: true
-                    }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10, ticks: { stepSize: 2 } } } }
-            });
-        }
-
-        function calcularResumenYNotas() {
-            let historial = [];
-            try { historial = JSON.parse(localStorage.getItem('p10_historial')) || []; } catch(e) {}
-            
-            document.getElementById('lblTotalDias').innerText = historial.length;
-            document.getElementById('lblRacha').innerText = localStorage.getItem('p10_streak') || 0;
-
+            let historial = JSON.parse(localStorage.getItem('p10_historial')) || [];
             if(historial.length === 0) return;
 
+            // Calcular Resumen
             let totales = {};
             defectos.concat(virtudes).forEach(x => { totales[x] = { suma: 0, con: 0 }; });
+            historial.forEach(h => { if(h.valores) Object.keys(h.valores).forEach(k => { if(totales[k]){ totales[k].suma += h.valores[k]; totales[k].con++; } }); });
 
-            historial.forEach(h => {
-                if (h.valores) {
-                    Object.keys(h.valores).forEach(k => {
-                        if (totales[k]) {
-                            totales[k].suma += h.valores[k];
-                            totales[k].con++;
-                        }
-                    });
-                }
-            });
-
-            let maxDefecto = "", maxDefectoAvg = -1;
-            let maxVirtud = "", maxVirtudAvg = -1;
-
-            defectos.forEach(d => {
-                let avg = totales[d].suma / (totales[d].con || 1);
-                if(avg > maxDefectoAvg && totales[d].con > 0) { maxDefectoAvg = avg; maxDefecto = d; }
-            });
-
-            virtudes.forEach(v => {
-                let avg = totales[v].suma / (totales[v].con || 1);
-                if(avg > maxVirtudAvg && totales[v].con > 0) { maxVirtudAvg = avg; maxVirtud = v; }
-            });
+            let maxDefecto = "", maxDefAvg = -1, maxVirtud = "", maxVirAvg = -1;
+            defectos.forEach(d => { let avg = totales[d].suma / (totales[d].con || 1); if(avg > maxDefAvg && totales[d].con>0) { maxDefAvg = avg; maxDefecto = d; } });
+            virtudes.forEach(v => { let avg = totales[v].suma / (totales[v].con || 1); if(avg > maxVirAvg && totales[v].con>0) { maxVirAvg = avg; maxVirtud = v; } });
 
             document.getElementById('lblDefectoMax').innerText = maxDefecto || "-";
-            document.getElementById('lblDefectoAvg').innerText = "Promedio: " + (maxDefectoAvg > -1 ? maxDefectoAvg.toFixed(1) : "0");
-            
             document.getElementById('lblVirtudMax').innerText = maxVirtud || "-";
-            document.getElementById('lblVirtudAvg').innerText = "Promedio: " + (maxVirtudAvg > -1 ? maxVirtudAvg.toFixed(1) : "0");
 
-            const contenedorNotas = document.getElementById('historial-notas-container');
+            // Historial de notas
+            const contNotas = document.getElementById('historial-notas-container');
             let notasHTML = "";
-            
             historial.slice().reverse().forEach(h => {
-                if(h.nota && h.nota.trim() !== "") {
-                    notasHTML += '<div class="history-item"><div class="history-date">' + h.fecha + '</div><div class="history-note">"' + h.nota + '"</div></div>';
-                }
+                if(h.nota && h.nota.trim() !== "") { notasHTML += `<div class="history-item"><div class="history-date">${h.fecha}</div><div class="history-note">"${h.nota}"</div></div>`; }
             });
-
-            contenedorNotas.innerHTML = notasHTML !== "" ? notasHTML : "No hay notas escritas aún.";
+            contNotas.innerHTML = notasHTML !== "" ? notasHTML : "No hay notas aún.";
         }
 
-        // Ejecutar al cargar la página
+        function mostrarModalRecompensa() {
+            const fraseAleatoria = frases[Math.floor(Math.random() * frases.length)];
+            document.getElementById('modalQuote').innerText = `"${fraseAleatoria}"`;
+            document.getElementById('modal-recompensa').style.display = 'flex';
+        }
+
+        function cerrarModal() { document.getElementById('modal-recompensa').style.display = 'none'; }
+
+        function cambiarFiltroTiempo(filtro, btn) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
+            filtroTiempoActual = filtro; renderizarGrafico(1); renderizarGrafico(2);
+        }
+
+        function renderizarGrafico(num) {
+            const sel = document.getElementById('select-chart-' + num);
+            if (!sel) return;
+            const metrica = sel.value;
+            let historial = JSON.parse(localStorage.getItem('p10_historial')) || [];
+            let limite = filtroTiempoActual === 'mes' ? 30 : (filtroTiempoActual === 'año' ? 365 : 7);
+            let datos = historial.slice(-limite);
+            
+            const labels = datos.map(h => h.fecha || "");
+            const vals = datos.map(h => (h.valores && h.valores[metrica]) ? h.valores[metrica] : 0);
+
+            if(instanciasGraficos[num]) instanciasGraficos[num].destroy();
+            const ctx = document.getElementById('chart-' + num).getContext('2d');
+            instanciasGraficos[num] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: metrica, data: vals, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } } });
+        }
+
+        function solicitarPermisoNotificaciones() {
+            if (!("Notification" in window)) {
+                alert("Tu navegador no soporta notificaciones.");
+            } else if (Notification.permission === "granted") {
+                alert("Las notificaciones ya están activadas. Recibirás recordatorios diarios.");
+                new Notification("Paso 10", { body: "¡Así se verán tus recordatorios diarios!" });
+            } else if (Notification.permission !== "denied") {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") { alert("¡Excelente! Notificaciones activadas."); }
+                });
+            }
+        }
+
         window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
