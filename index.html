@@ -220,7 +220,7 @@
         }
 
         function crearSliderHTML(nombre, id) {
-            return '<div class="item-row"><div class="item-header"><span>' + nombre + '</span><span class="item-value" id="val_' + id + '">0</span></div><input type="range" id="' + id + '" min="0" max="10" value="0" oninput="document.getElementById(\'val_' + id + '\').innerText = this.value"></div>';
+            return '<div class="item-row"><div class="item-header"><span>' + nombre + '</span><span class="item-value" id="val_' + id + '">0</span></div><input type="range" id="' + id + '" min="0" max="10" value="0" oninput="document.getElementById(\'val_\' + id).innerText = this.value"></div>';
         }
 
         function poblarSelectores() {
@@ -364,7 +364,10 @@
             const vals = datos.map(h => (h.valores && h.valores[metrica]) ? h.valores[metrica] : 0);
 
             if(instanciasGraficos[num]) instanciasGraficos[num].destroy();
-            const ctx = document.getElementById('chart-' + num).getContext('2d');
+            const canvas = document.getElementById('chart-' + num);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
             instanciasGraficos[num] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: metrica, data: vals, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } } });
         }
 
