@@ -33,7 +33,6 @@
         h1 { font-size: 22px; font-weight: 800; color: var(--text-main); }
         .date { color: var(--text-muted); font-size: 14px; }
         
-        /* Gamificación en Header */
         .game-stats { display: flex; justify-content: space-between; margin-top: 12px; background: #f1f5f9; padding: 10px 15px; border-radius: 10px; font-size: 14px; font-weight: 600; }
         .game-stats span { display: flex; align-items: center; gap: 5px; }
 
@@ -55,7 +54,7 @@
         textarea { width: 100%; height: 110px; background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 14px; border-radius: var(--radius); font-size: 16px; resize: none; }
         textarea:focus { outline: none; border-color: var(--accent); }
         
-        .btn-main { display: block; width: 100%; padding: 16px; background: var(--accent); color: white; font-size: 16px; font-weight: bold; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 20px; transition: 0.2s; }
+        .btn-main { display: block; width: 100%; padding: 16px; background: var(--accent); color: white; font-size: 16px; font-weight: bold; border: none; border-radius: var(--radius); cursor: pointer; margin-top: 20px; transition: 0.2s; text-align: center; }
         .btn-main:active { transform: scale(0.98); }
         
         .btn-outline { background: transparent; border: 2px solid var(--accent); color: var(--accent); }
@@ -82,7 +81,6 @@
         .nav-btn.active { color: var(--accent); }
         .nav-icon { font-size: 22px; }
 
-        /* Modal de Gamificación y Motivación */
         #modal-recompensa { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 999; justify-content: center; align-items: center; padding: 20px; }
         .modal-content { background: var(--card-bg); padding: 30px 20px; border-radius: 20px; text-align: center; width: 100%; max-width: 350px; animation: pop 0.3s ease-out; }
         @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -115,7 +113,7 @@
         <h2 class="section-title">Nota del día</h2>
         <textarea id="notaDia" placeholder="Escribe aquí las observaciones del día..."></textarea>
 
-        <button class="btn-main" onclick="guardarInventario()">Completar Día</button>
+        <button id="btnGuardar" class="btn-main" onclick="guardarInventario()">Completar Día</button>
     </section>
 
     <section id="screen-estadisticas" class="screen">
@@ -131,7 +129,7 @@
         </div>
         <div class="card">
             <select id="select-chart-2" onchange="renderizarGrafico(2)"></select>
-            <div class="chart-container"><canvas id="chart-2"></canvas></div>
+            <div class="chart-container"><canvas id="chart-3"></canvas></div>
         </div>
     </section>
 
@@ -157,6 +155,12 @@
             <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Recibe una notificación para no perder tu racha.</p>
             <button class="btn-main btn-outline" style="margin-top:0; padding: 12px;" onclick="solicitarPermisoNotificaciones()">🔔 Activar Recordatorio</button>
         </div>
+
+        <div class="card" style="text-align: center; border-color: #fca5a5; margin-top: 25px;">
+            <div class="card-title" style="color: #b91c1c;">Zona de Peligro</div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Borra de forma permanente todo tu historial, racha y puntos de experiencia.</p>
+            <button class="btn-main" style="margin-top:0; padding: 12px; background: #ef4444;" onclick="reiniciarApp()">🗑️ Reiniciar Datos</button>
+        </div>
     </section>
 
     <div id="modal-recompensa">
@@ -176,7 +180,6 @@
     </nav>
 
     <script>
-        // Registrar Service Worker para PWA Offline e Instalación
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('./sw.js').then(() => console.log('PWA Lista')).catch(err => console.log(err));
         }
@@ -207,6 +210,7 @@
 
             poblarSelectores();
             actualizarDatosJuego();
+            verificarBloqueoDiario();
         }
 
         function crearSliderHTML(nombre, id) {
@@ -222,6 +226,20 @@
             }
         }
 
+        function verificarBloqueoDiario() {
+            const hoyStr = new Date().toDateString();
+            const ultimoGuardado = localStorage.getItem('p10_ultimo_guardado');
+            const btn = document.getElementById('btnGuardar');
+            
+            if (ultimoGuardado === hoyStr) {
+                btn.innerText = "Inventario de hoy completado";
+                btn.disabled = true;
+                btn.style.background = "#cbd5e1";
+                btn.style.color = "#64748b";
+                btn.style.cursor = "not-allowed";
+            }
+        }
+
         function navegar(pantalla, btn) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -234,6 +252,9 @@
         }
 
         function guardarInventario() {
+            const hoyStr = new Date().toDateString();
+            if (localStorage.getItem('p10_ultimo_guardado') === hoyStr) return;
+
             const registro = {
                 fecha: new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }),
                 timestamp: new Date().getTime(),
@@ -245,27 +266,31 @@
 
             let historial = JSON.parse(localStorage.getItem('p10_historial')) || [];
             
-            // Verificar si ya guardó hoy para no sumar racha/XP doble
-            const hoyStr = new Date().toDateString();
-            const ultimoGuardado = localStorage.getItem('p10_ultimo_guardado');
-            
-            if (ultimoGuardado !== hoyStr) {
-                let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
-                let xp = parseInt(localStorage.getItem('p10_xp')) || 0;
-                localStorage.setItem('p10_streak', streak + 1);
-                localStorage.setItem('p10_xp', xp + 100);
-                localStorage.setItem('p10_ultimo_guardado', hoyStr);
-            }
+            let streak = parseInt(localStorage.getItem('p10_streak')) || 0;
+            let xp = parseInt(localStorage.getItem('p10_xp')) || 0;
+            localStorage.setItem('p10_streak', streak + 1);
+            localStorage.setItem('p10_xp', xp + 100);
+            localStorage.setItem('p10_ultimo_guardado', hoyStr);
 
             historial.push(registro);
             localStorage.setItem('p10_historial', JSON.stringify(historial));
 
             mostrarModalRecompensa();
 
-            // Limpiar
             document.querySelectorAll('input[type=range]').forEach(input => { input.value = 0; input.dispatchEvent(new Event('input')); });
             document.getElementById('notaDia').value = "";
             actualizarDatosJuego();
+            verificarBloqueoDiario();
+        }
+
+        function reiniciarApp() {
+            if (confirm("¿Estás completamente seguro de que deseas borrar todos tus datos? Esta acción eliminará permanentemente tu historial, rachas y puntos.")) {
+                localStorage.removeItem('p10_historial');
+                localStorage.removeItem('p10_streak');
+                localStorage.removeItem('p10_xp');
+                localStorage.removeItem('p10_ultimo_guardado');
+                location.reload();
+            }
         }
 
         function actualizarDatosJuego() {
@@ -275,21 +300,24 @@
             document.getElementById('hdrXP').innerText = xp;
 
             let historial = JSON.parse(localStorage.getItem('p10_historial')) || [];
-            if(historial.length === 0) return;
+            if(historial.length === 0) {
+                document.getElementById('lblDefectoMax').innerText = "-";
+                document.getElementById('lblVirtudMax').innerText = "-";
+                document.getElementById('historial-notas-container').innerText = "No hay registros anteriores.";
+                return;
+            }
 
-            // Calcular Resumen
             let totales = {};
             defectos.concat(virtudes).forEach(x => { totales[x] = { suma: 0, con: 0 }; });
             historial.forEach(h => { if(h.valores) Object.keys(h.valores).forEach(k => { if(totales[k]){ totales[k].suma += h.valores[k]; totales[k].con++; } }); });
 
             let maxDefecto = "", maxDefAvg = -1, maxVirtud = "", maxVirAvg = -1;
-            defectos.forEach(d => { let avg = totales[d].suma / (totales[d].con || 1); if(avg > maxDefAvg && totales[d].con>0) { maxDefAvg = avg; maxDefecto = d; } });
-            virtudes.forEach(v => { let avg = totales[v].suma / (totales[v].con || 1); if(avg > maxVirAvg && totales[v].con>0) { maxVirAvg = avg; maxVirtud = v; } });
+            defectos.forEach(d => { let avg = totales[d].suma / (totales[d].con || 1); if(avg > maxDefAvg && totales[d].con > 0) { maxDefAvg = avg; maxDefecto = d; } });
+            virtudes.forEach(v => { let avg = totales[v].suma / (totales[v].con || 1); if(avg > maxVirAvg && totales[v].con > 0) { maxVirAvg = avg; maxVirtud = v; } });
 
-            document.getElementById('lblDefectoMax').innerText = maxDefecto || "-";
-            document.getElementById('lblVirtudMax').innerText = maxVirtud || "-";
+            document.getElementById('lblDefectoMax').innerText = maxDefecto ? `${maxDefecto} (${maxDefAvg.toFixed(1)})` : "-";
+            document.getElementById('lblVirtudMax').innerText = maxVirtud ? `${maxVirtud} (${maxVirAvg.toFixed(1)})` : "-";
 
-            // Historial de notas
             const contNotas = document.getElementById('historial-notas-container');
             let notasHTML = "";
             historial.slice().reverse().forEach(h => {
@@ -331,8 +359,7 @@
             if (!("Notification" in window)) {
                 alert("Tu navegador no soporta notificaciones.");
             } else if (Notification.permission === "granted") {
-                alert("Las notificaciones ya están activadas. Recibirás recordatorios diarios.");
-                new Notification("Paso 10", { body: "¡Así se verán tus recordatorios diarios!" });
+                alert("Las notificaciones ya están activadas.");
             } else if (Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
                     if (permission === "granted") { alert("¡Excelente! Notificaciones activadas."); }
