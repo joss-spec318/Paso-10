@@ -129,7 +129,7 @@
         </div>
         <div class="card">
             <select id="select-chart-2" onchange="renderizarGrafico(2)"></select>
-            <div class="chart-container"><canvas id="chart-3"></canvas></div>
+            <div class="chart-container"><canvas id="chart-2"></canvas></div>
         </div>
     </section>
 
@@ -152,8 +152,9 @@
 
         <div class="card" style="text-align: center;">
             <div class="card-title">Recordatorio Diario</div>
-            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Recibe una notificación para no perder tu racha.</p>
-            <button class="btn-main btn-outline" style="margin-top:0; padding: 12px;" onclick="solicitarPermisoNotificaciones()">🔔 Activar Recordatorio</button>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;">Elige a qué hora quieres recibir tu alerta para hacer el inventario.</p>
+            <input type="time" id="horaRecordatorio" style="padding: 10px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; width: 100%; color: var(--text-main); text-align: center;">
+            <button class="btn-main btn-outline" style="margin-top:0; padding: 12px;" onclick="guardarRecordatorio()">🔔 Guardar y Activar</button>
         </div>
 
         <div class="card" style="text-align: center; border-color: #fca5a5; margin-top: 25px;">
@@ -211,6 +212,7 @@
             poblarSelectores();
             actualizarDatosJuego();
             verificarBloqueoDiario();
+            cargarRecordatorio();
         }
 
         function crearSliderHTML(nombre, id) {
@@ -355,14 +357,33 @@
             instanciasGraficos[num] = new Chart(ctx, { type: 'line', data: { labels: labels, datasets: [{ label: metrica, data: vals, borderColor: '#3b82f6', backgroundColor: 'rgba(59, 130, 246, 0.1)', borderWidth: 2, fill: true }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 10 } } } });
         }
 
-        function solicitarPermisoNotificaciones() {
+        function cargarRecordatorio() {
+            const horaGuardada = localStorage.getItem('p10_hora_recordatorio');
+            if(horaGuardada) {
+                document.getElementById('horaRecordatorio').value = horaGuardada;
+            } else {
+                document.getElementById('horaRecordatorio').value = "21:00";
+            }
+        }
+
+        function guardarRecordatorio() {
+            const hora = document.getElementById('horaRecordatorio').value;
+            if(!hora) {
+                alert("Por favor selecciona una hora válida.");
+                return;
+            }
+            
+            localStorage.setItem('p10_hora_recordatorio', hora);
+            
             if (!("Notification" in window)) {
                 alert("Tu navegador no soporta notificaciones.");
             } else if (Notification.permission === "granted") {
-                alert("Las notificaciones ya están activadas.");
+                alert(`¡Listo! Intentaremos recordártelo todos los días a las ${hora}.`);
             } else if (Notification.permission !== "denied") {
                 Notification.requestPermission().then(permission => {
-                    if (permission === "granted") { alert("¡Excelente! Notificaciones activadas."); }
+                    if (permission === "granted") { 
+                        alert(`¡Excelente! Notificaciones activadas para las ${hora}.`); 
+                    }
                 });
             }
         }
