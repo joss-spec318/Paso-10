@@ -131,6 +131,10 @@
             <select id="select-chart-2" onchange="renderizarGrafico(2)"></select>
             <div class="chart-container"><canvas id="chart-2"></canvas></div>
         </div>
+        <div class="card">
+            <select id="select-chart-3" onchange="renderizarGrafico(3)"></select>
+            <div class="chart-container"><canvas id="chart-3"></canvas></div>
+        </div>
     </section>
 
     <section id="screen-resumen" class="screen">
@@ -222,9 +226,14 @@
         function poblarSelectores() {
             let op = "";
             defectos.concat(virtudes).forEach(x => op += '<option value="' + x + '">' + x + '</option>');
-            for(let i=1; i<=2; i++) {
+            for(let i=1; i<=3; i++) {
                 const sel = document.getElementById('select-chart-' + i);
-                if (sel) { sel.innerHTML = op; sel.value = i===1 ? "Resentimiento" : "Gratitud"; }
+                if (sel) { 
+                    sel.innerHTML = op; 
+                    if(i===1) sel.value = "Resentimiento";
+                    if(i===2) sel.value = "Gratitud";
+                    if(i===3) sel.value = "Miedo";
+                }
             }
         }
 
@@ -249,7 +258,9 @@
             btn.classList.add('active');
             document.getElementById('pageTitle').innerText = pantalla.charAt(0).toUpperCase() + pantalla.slice(1);
 
-            if(pantalla === 'estadisticas') { setTimeout(() => { renderizarGrafico(1); renderizarGrafico(2); }, 50); }
+            if(pantalla === 'estadisticas') { 
+                setTimeout(() => { renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3); }, 50); 
+            }
             if(pantalla === 'resumen') { actualizarDatosJuego(); }
         }
 
@@ -338,7 +349,7 @@
 
         function cambiarFiltroTiempo(filtro, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active')); btn.classList.add('active');
-            filtroTiempoActual = filtro; renderizarGrafico(1); renderizarGrafico(2);
+            filtroTiempoActual = filtro; renderizarGrafico(1); renderizarGrafico(2); renderizarGrafico(3);
         }
 
         function renderizarGrafico(num) {
